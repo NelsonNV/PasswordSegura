@@ -1,6 +1,8 @@
 import hashlib
 import csv
 import pendulum
+import os
+
 
 def evaluar_seguridad(passwd):
   # Puntuación inicial
@@ -21,13 +23,21 @@ def evaluar_seguridad(passwd):
     score += 1
   
   # Leer palabras comunes
-  with open('wordlist/WordlistSpanish.txt', 'r') as f:
-    common_words = list(csv.reader(f))
-    
-  # Puntuar negativamente si es fácil de adivinar
-  if passwd in common_words:
+  lstWordlist = []
+  strFileNames = os.listdir('wordlist/')
+
+  for archivo in strFileNames:
+    if archivo.endswith('.txt'):
+    #Leer archivo wordlist
+      with open(f'wordlist/{archivo}', 'r') as file:
+        for palabra in file:
+          lstWordlist.append(palabra.strip())
+
+    lstWordlist = list(set(lstWordlist))
+
+  if passwd in lstWordlist:
     score -= 1
-  
+
   # Calcular fortaleza
   strength = hashlib.sha256(passwd.encode()).hexdigest()
   
@@ -35,6 +45,7 @@ def evaluar_seguridad(passwd):
   decode_time = 10 ** (score - 1)
   
   return score, strength, decode_time
+  
   
 strPassWord = input('contraseña ->')  
 
@@ -59,3 +70,4 @@ else:
     print("Puntuación de seguridad: Muy segura")
 print(f"Fortaleza: {fortaleza}")
 print(f"Tiempo de decodificación: {tiempo.in_words()}")
+
